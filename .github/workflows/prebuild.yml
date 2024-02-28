@@ -1,0 +1,31 @@
+name: Prebuild
+
+permissions:
+  contents: write
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  prebuild:
+    name: Prebuild
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-2022, macos-12]
+    runs-on: ${{ matrix.os }}
+
+    env:
+      PREBUILD_CMD: npx prebuild -r napi --all --strip -u ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js 18
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+    - run: npm ci
+    - run: ${{ env.PREBUILD_CMD }}
+    - if: runner.os == 'macOS'
+      run: ${{ env.PREBUILD_CMD }} --arch arm64

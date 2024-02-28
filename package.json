@@ -2,7 +2,10 @@
   "name": "tree-sitter-hello",
   "version": "0.0.1",
   "description": "Hello grammar for tree-sitter",
-  "repository": "github:tree-sitter/tree-sitter-hello",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/segevfiner/tree-sitter-hello.git"
+  },
   "license": "MIT",
   "main": "bindings/node",
   "files": [
@@ -20,12 +23,19 @@
     "hello"
   ],
   "dependencies": {
-    "node-addon-api": "^7.1.0"
+    "node-addon-api": "^7.1.0",
+    "prebuild-install": "^7.1.1"
   },
   "devDependencies": {
     "tree-sitter-cli": "^0.21.0"
   },
+  "binary": {
+    "napi_versions": [
+      8
+    ]
+  },
   "scripts": {
+    "install": "prebuild-install -r napi || node-gyp rebuild",
     "build": "tree-sitter generate --no-bindings",
     "build-wasm": "tree-sitter build-wasm",
     "test": "tree-sitter test",
