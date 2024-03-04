@@ -4,6 +4,7 @@
   "description": "Hello grammar for tree-sitter",
   "repository": "github:tree-sitter/tree-sitter-hello",
   "license": "MIT",
+  "types": "bindings/node",
   "main": "bindings/node",
   "files": [
     "grammar.js",
