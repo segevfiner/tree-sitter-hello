@@ -34,3 +34,6 @@ dsl.d.ts
 *.wasm
 *.obj
 *.o
+
+# Prebuilds
+/prebuilds/

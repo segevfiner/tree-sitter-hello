@@ -1,0 +1,81 @@
+name: Publish package (npm)
+
+on:
+  # workflow_call:
+  #   inputs:
+  #     package-name:
+  #       description: The name of the package
+  #       default: ${{github.event.repository.name}}
+  #       type: string
+  #     environment-name:
+  #       description: The name of the environment
+  #       default: npm
+  #       type: string
+  #     node-version:
+  #       description: The NodeJS version
+  #       default: ${{vars.NODE_VERSION || 'latest'}}
+  #       type: string
+  #   secrets:
+  #     NODE_AUTH_TOKEN:
+  #       description: An authentication token for npm
+  #       required: true
+  push:
+
+jobs:
+  prebuild:
+    name: Prebuild
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-2022, macos-12]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+          cache: npm
+      - name: Install packages
+        run: npm install
+      - name: Prebuild
+        run: npx prebuildify --napi --strip
+      - name: Prebuild arm64
+        if: runner.os == 'macOS'
+        run: npx prebuildify --napi --strip --arch arm64
+      - name: Upload prebuilds
+        uses: actions/upload-artifact@v4
+        with:
+          name: prebuilds-${{ matrix.os }}
+          path: prebuilds
+
+  publish:
+    name: Publish
+    needs: [prebuild]
+    runs-on: ubuntu-20.04
+    # environment:
+    #   name: ${{inputs.environment-name}}
+    #   url: https://www.npmjs.com/package/${{inputs.package-name}}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+          cache: npm
+      - name: Install packages
+        run: npm install
+      - name: Download prebuilds
+        uses: actions/download-artifact@v4
+        with:
+          pattern: prebuilds-*
+          path: prebuilds
+          merge-multiple: true
+      - run: ls -lR prebuilds
+      # - name: Publish to npm
+      #   run: npm publish
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
